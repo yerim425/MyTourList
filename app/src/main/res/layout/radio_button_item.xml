@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="@string/seoul"
+android:textSize="16sp"
+android:textColor="@color/black"
+android:textStyle="bold"
+android:button="@null"
+android:drawableStart="@drawable/selector_radio"
+android:drawablePadding="8dp"
+android:paddingHorizontal="8dp"/>

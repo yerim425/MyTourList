@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">TP08TourAPI</string>
+    <string name="seoul">서울</string>
+    <string name="total">전체</string>
+    <string name="search">검색</string>
+    <string name="tourist">관광지</string>
+    <string name="cultural_facilities">문화시설</string>
+    <string name="festival">축제공연행사</string>
+    <string name="travel_course">여행코스</string>
+    <string name="leisure_sports">레포츠</string>
+    <string name="accommodation">숙박</string>
+    <string name="shopping">쇼핑</string>
+    <string name="restaurant">음식점</string>
+    <string name="loading">로딩중</string>
+    <string name="loading_data">데이터 로딩중...</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_data">데이터가 없어요!</string>
+</resources>
