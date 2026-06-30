@@ -11,5 +11,8 @@ public class TourItem {
     public String addr2; // 상세 주소
     public String tel; // 전화번호
 
+    public String mapx;
+    public String mapy;
+
     public String cat1; // 대분류(자연, 인문, ...)
 }

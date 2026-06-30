@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.yrlee.tp08tourapi.MainActivity;
@@ -35,10 +36,29 @@ public class LeportsFragment extends BaseFragment {
         recyclerView.setAdapter(tourAdapter);
         ((MainActivity)getActivity()).loadContentData(getString(R.string.leisure_sports));
 
-        recyclerView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView,
+                                   int dx,
+                                   int dy) {
+
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy <= 0) return;
+
+                LinearLayoutManager manager =
+                        (LinearLayoutManager) recyclerView.getLayoutManager();
+
+                int visibleItemCount = manager.getChildCount();
+                int totalItemCount = manager.getItemCount();
+                int firstVisibleItemPosition = manager.findFirstVisibleItemPosition();
+
+                if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                        && firstVisibleItemPosition >= 0) {
+
+                    ((MainActivity)getActivity()).loadNextTouristPage();
+                }
             }
         });
     }

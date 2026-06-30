@@ -5,10 +5,12 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.yrlee.tp08tourapi.MainActivity;
 import com.yrlee.tp08tourapi.R;
 import com.yrlee.tp08tourapi.data.TourItem;
+import com.yrlee.tp08tourapi.util.Constants;
 
 import java.util.ArrayList;
 
@@ -50,7 +53,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             holder.tvTel.setVisibility(VISIBLE);
             holder.tvTel.setText(item.tel);
         }
-        String category = ((MainActivity)context).categoryMap.get(item.cat1);
+        String category = Constants.CATEGORY_MAP.get(item.cat1);
         if(category!=null){
             holder.tvCategory.setVisibility(VISIBLE);
             holder.tvCategory.setText("#"+category);
@@ -64,6 +67,12 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
                 .placeholder(R.drawable.img_search)
                 .into(holder.ivImage);
 
+        Log.d("adapter", "title: " + item.title + "mapy: "+item.mapy + "mapx: " + item.mapx);
+
+        holder.layout.setOnClickListener( v-> {
+            ((MainActivity) context).openKakaoMap(item.title, item.mapy, item.mapx);
+            }
+        );
     }
 
     @Override
@@ -75,6 +84,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
 
         TextView tvTitle, tvAddr, tvTel, tvCategory;
         ImageView ivImage;
+        LinearLayout layout;
         public VH(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tv_title);
@@ -82,6 +92,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             tvTel = itemView.findViewById(R.id.tv_tel);
             tvCategory = itemView.findViewById(R.id.tv_category);
             ivImage = itemView.findViewById(R.id.iv_first_image);
+            layout = itemView.findViewById(R.id.layout_item);
         }
     }
 }

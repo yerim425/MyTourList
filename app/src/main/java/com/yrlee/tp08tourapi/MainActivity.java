@@ -3,13 +3,17 @@ package com.yrlee.tp08tourapi;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +33,7 @@ import com.yrlee.tp08tourapi.fragment.RestaurantFragment;
 import com.yrlee.tp08tourapi.fragment.ShoppingFragment;
 import com.yrlee.tp08tourapi.fragment.TouristFragment;
 import com.yrlee.tp08tourapi.fragment.TravelCourseFragment;
+import com.yrlee.tp08tourapi.util.Constants;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -39,8 +44,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -56,16 +63,12 @@ public class MainActivity extends AppCompatActivity {
     TextInputLayout inputLayoutArea;
     AutoCompleteTextView actvArea;
     ArrayAdapter areaAdapter;
-    Map<String, String> areaMap = new HashMap<>(); // <지역이름, 지역코드>
 
     // sigunguCode 관련 TextInputLayout
     TextInputLayout inputLayoutAreaDetail;
     AutoCompleteTextView actvAreaDetail;
     ArrayAdapter areaDetailAdapter;
-    Map<String, String> areaDetailMap = new HashMap<>();
 
-    // 콘텐츠 타입-----------------------------
-    Map<String, String> contentTypeMap = new HashMap<>();
     TabLayout tabLayout;
 
     TextView tvItemCount; // 화면에 보여진 아이템 개수
@@ -82,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
     ShoppingFragment shoppingFragment = null;
     TravelCourseFragment travelCourseFragment = null;
 
+    // 로딩 프로그래스 바
+    ProgressBar progressBar;
+
+    // 페이징
+    private int currentPage = 1;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    private int totalCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,54 +105,51 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         // 아이템 카테고리 목록 요청
-        loadCategoryCodeData();
+//        loadCategoryCodeData();
 
-        // 콘텐츠 타입 데이터 셋팅 // (12:관광지, 14:문화시설, 15:축제공연행사, 25:여행코스, 28:레포츠, 32:숙박, 38:쇼핑, 39:음식점) ID
-        contentTypeMap.put(getString(R.string.tourist), "12");
-        contentTypeMap.put(getString(R.string.cultural_facilities), "14");
-        contentTypeMap.put(getString(R.string.festival), "15");
-        contentTypeMap.put(getString(R.string.travel_course), "25");
-        contentTypeMap.put(getString(R.string.leisure_sports), "28");
-        contentTypeMap.put(getString(R.string.accommodation), "32");
-        contentTypeMap.put(getString(R.string.shopping), "38");
-        contentTypeMap.put(getString(R.string.restaurant), "39");
+        // 프로그래스 바
+        progressBar = findViewById(R.id.progressbar);
+
+        // 카테고리 별 탭 추가
         tabLayout = findViewById(R.id.tab_layout);
-        for(String type: contentTypeMap.keySet()){
+        for(String type: Constants.CONTENT_TYPE_MAP.keySet()){
             TabLayout.Tab tab = tabLayout.newTab();
             tab.setText(type);
             tabLayout.addTab(tab);
         }
 
         // 초기 화면 - 서울-전체 관광지 리스트
-        areaMap.put(getString(R.string.seoul), "1");
-        areaDetailMap.put(getString(R.string.total), "");
-        // 지역 코드 데이터 요청
         inputLayoutArea = findViewById(R.id.input_layout_area);
         actvArea = (AutoCompleteTextView) inputLayoutArea.getEditText(); // AutoCompleteTextView extends EditText
         areaAdapter = new ArrayAdapter(this, R.layout.recycler_area_item, new ArrayList<String>());
         actvArea.setAdapter(areaAdapter);
         inputLayoutArea.requestFocus();
+        actvArea.setText("서울", false);
         actvArea.dismissDropDown();
-        loadAreaData(""); // "서울", "부산", "제주", ...
-        actvArea.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String name = actvArea.getText().toString();
-                loadAreaData(areaMap.get(name)); // 선택한 지역의 상세 지역 이름 데이터 요청
-            }
-        });
+        areaAdapter.addAll(Constants.SIDO_MAP.keySet());
 
-        // 상세 지역 코드 데이터 요청
+        // 상세 지역 리스트 가져오기
         inputLayoutAreaDetail = findViewById(R.id.input_layout_detail);
         actvAreaDetail = (AutoCompleteTextView) inputLayoutAreaDetail.getEditText();
         areaDetailAdapter = new ArrayAdapter(this, R.layout.recycler_area_item, new ArrayList<String>());
         actvAreaDetail.setAdapter(areaDetailAdapter);
-        loadAreaData("1"); // 서울 전체 -> "강남구", "도봉구", "성북구", ...
+        updateAreaDetail("서울"); //// 선택한 지역의 상세 지역 리스트 가져오기
+
+        actvArea.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String name = actvArea.getText().toString();
+                //loadAreaData(areaMap.get(name));
+                updateAreaDetail(name); //// 선택한 지역의 상세 지역 리스트 가져오기
+            }
+        });
 
         // 검색 버튼 리스너
         findViewById(R.id.btn_search).setOnClickListener(v -> {
             getSupportFragmentManager().beginTransaction().replace(R.id.container, touristFragment = new TouristFragment()).commit();
             tabLayout.getTabAt(0).select();
+            currentPage = 1;
+            loadContentData(getString(R.string.tourist));
         });
 
         // 탭 레이아웃 설정
@@ -159,6 +167,10 @@ public class MainActivity extends AppCompatActivity {
                 else if(tabName.equals(getString(R.string.restaurant))) getSupportFragmentManager().beginTransaction().replace(R.id.container, restaurantFragment = new RestaurantFragment()).commit();
                 else if(tabName.equals(getString(R.string.shopping))) getSupportFragmentManager().beginTransaction().replace(R.id.container, shoppingFragment = new ShoppingFragment()).commit();
                 else if(tabName.equals(getString(R.string.travel_course))) getSupportFragmentManager().beginTransaction().replace(R.id.container, travelCourseFragment = new TravelCourseFragment()).commit();
+
+                // 선택된 탭으로 loadContentData
+                currentPage = 1;
+                loadContentData(tabName);
             }
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {}
@@ -168,113 +180,41 @@ public class MainActivity extends AppCompatActivity {
 
         // 화면에 보여진 데이터 개수
         tvItemCount = findViewById(R.id.tv_item_cnt);
+
+        // 처음에 한 번 ContentData 호출
+        loadContentData(getString(R.string.tourist));
     }
 
-    // 지역 코드 조회
-    public void loadAreaData(String areaCode) {
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                String requestKeyWord = "areaCode2";
-                String address = BASE_URL + requestKeyWord + BASE_TYPE +"&numOfRows=30&pageNo=1" + "&serviceKey=" + API_KEY;
-                if(!areaCode.isEmpty()) {  // "1"
-                    address += "&areaCode="+areaCode;
-                    areaDetailMap.clear();
-                    runOnUiThread(()->{
-                        inputLayoutAreaDetail.setEnabled(false);
-                    });
+    // 상세 지역 리스트 업데이트
+    private void updateAreaDetail(String areaName){
+        areaDetailAdapter.clear();
+        areaDetailAdapter.add(getString(R.string.total));
+        areaDetailAdapter.addAll(Constants.SIGUNGU_MAP.get(Constants.SIDO_MAP.get(areaName)).keySet());
+        areaDetailAdapter.notifyDataSetChanged();
+        actvAreaDetail.setText(getString(R.string.total), false);
+        inputLayoutAreaDetail.setEnabled(true);
 
-                }else{
-                    areaMap.clear();
-                }
-                try {
-                    URL url = new URL(address);
-                    InputStream is = url.openStream();
-                    InputStreamReader isr = new InputStreamReader(is);
-
-                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                    XmlPullParser xpp = factory.newPullParser();
-
-                    xpp.setInput(isr);
-                    int size = 0;
-                    int eventType = xpp.getEventType();
-                    CodeItem item = null;
-                    while (eventType != XmlPullParser.END_DOCUMENT) {
-                        switch (eventType) {
-                            case XmlPullParser.START_DOCUMENT:
-                                break;
-                            case XmlPullParser.START_TAG:
-                                String tagName = xpp.getName();
-                                if (tagName.equals("item")) {
-                                    item = new CodeItem();
-                                } else if (tagName.equals("code")) {
-                                    xpp.next();
-                                    item.code = xpp.getText();
-                                } else if (tagName.equals("name")) {
-                                    xpp.next();
-                                    item.name = xpp.getText();
-                                }
-                                break;
-                            case XmlPullParser.END_TAG:
-                                String tagNames = xpp.getName();
-                                if (tagNames.equals("item")) {
-                                    size++;
-                                    Log.d("area name", "size: "+size+" name: "+item.name + " code: "+item.code);
-                                    if(areaCode.isEmpty()) {
-                                        areaMap.put(item.name, item.code);
-                                    } else {
-                                        areaDetailMap.put(item.name, item.code);
-                                    }
-                                }
-                        }
-                        eventType = xpp.next();
-                    }
-                    runOnUiThread(() -> {
-                        for(String i: areaDetailMap.keySet()){
-                            Log.d("area item", i);
-                        }
-                        if(areaCode.isEmpty()) {
-                            areaAdapter.clear();
-                            areaAdapter.addAll(new ArrayList<>(areaMap.keySet()));
-                            areaAdapter.notifyDataSetChanged();
-                        }
-                        else {
-                            areaDetailAdapter.clear();
-                            areaDetailAdapter.add(getString(R.string.total));
-                            areaDetailAdapter.addAll(new ArrayList<>(areaDetailMap.keySet()));
-                            areaDetailAdapter.notifyDataSetChanged();
-                            areaDetailMap.put(getString(R.string.total), "");
-                            actvAreaDetail.setText(getString(R.string.total), false);
-                            inputLayoutAreaDetail.setEnabled(true);
-                        }
-                    });
-                } catch (IOException | XmlPullParserException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        t.start();
     }
-
-
 
     public void loadContentData(String contentTypeName) {
+        setLoading(true);
         Thread t = new Thread() {
             @Override
             public void run() {
 
                 ArrayList<TourItem> tourItems = new ArrayList<>();
-                String areaCode = areaMap.get(actvArea.getText().toString());
-                String singunguCode = areaDetailMap.get(actvAreaDetail.getText().toString());
-                if(areaCode==null||singunguCode==null){
-                    areaCode = "1"; singunguCode = ""; // 서울-전체로 검색함
-                }
+                String areaCode = Constants.SIDO_MAP.get(actvArea.getText().toString());
+                String singunguCode = Objects.requireNonNull(Constants.SIGUNGU_MAP.get(areaCode)).get(actvAreaDetail.getText().toString());
 
                 String requestKeyWord = "areaBasedList2";
-                String address = BASE_URL + requestKeyWord + BASE_TYPE + "&arrange=O&serviceKey=" + API_KEY
-                        + "&contentTypeId=" + contentTypeMap.get(contentTypeName) + "&areaCode=" + areaCode;
+                String address = BASE_URL + requestKeyWord + BASE_TYPE +
+                        "&arrange=O&serviceKey=" + API_KEY +
+                        "&contentTypeId=" + Constants.CONTENT_TYPE_MAP.get(contentTypeName) +
+                        "&areaCode=" + areaCode +
+                        "&pageNo="+currentPage +
+                        "&numOfRows=20";
 
-                if(!singunguCode.isEmpty())
+                if(singunguCode != null)
                     address += "&sigunguCode="+singunguCode;
 
                 Log.d("content item", address);
@@ -330,6 +270,12 @@ public class MainActivity extends AppCompatActivity {
                                 } else if (tagName.equals("cat1")) {
                                     xpp.next();
                                     item.cat1 = xpp.getText();
+                                } else if (tagName.equals("mapx")) {
+                                    xpp.next();
+                                    item.mapx = xpp.getText();
+                                } else if (tagName.equals("mapy")) {
+                                    xpp.next();
+                                    item.mapy = xpp.getText();
                                 } else if(tagName.equals("numOfRows")){
                                     xpp.next();
                                     itemSize[0] = xpp.getText();
@@ -352,9 +298,14 @@ public class MainActivity extends AppCompatActivity {
                        try{ // 화면에 아이템 개수 보이기
                            tvItemCount.setVisibility(VISIBLE);
                            int size = Integer.parseInt(itemSize[0])*Integer.parseInt(itemSize[1]);
+                           if(size >= Integer.parseInt(itemSize[2])) isLastPage = true;
                            tvItemCount.setText(size + "/" + itemSize[2]);
+
+                           Log.d("size", Arrays.toString(itemSize));
+
                        }catch(NumberFormatException | NullPointerException e){
                            tvItemCount.setVisibility(INVISIBLE);
+                           isLastPage = true;
                        }
                        if(contentTypeName.equals(getString(R.string.tourist))) touristFragment.addItems(tourItems);
                        else if(contentTypeName.equals(getString(R.string.leisure_sports))) leportsFragment.addItems(tourItems);
@@ -367,64 +318,45 @@ public class MainActivity extends AppCompatActivity {
                     });
                 } catch (IOException | XmlPullParserException e) {
                     throw new RuntimeException(e);
+                }finally {
+                    setLoading(false);
                 }
 
             }
         };
         t.start(); // 자동으로 run() 영역 안에 코드가 수행됨(별도 Thread 직원객체에 의해)
     }
-    public void loadCategoryCodeData() {
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                String requestKeyWord = "categoryCode2";
-                String address = BASE_URL + requestKeyWord + BASE_TYPE + "&serviceKey=" + API_KEY;
 
-                try {
-                    URL url = new URL(address);
-                    InputStream is = url.openStream();
-                    InputStreamReader isr = new InputStreamReader(is);
+    private void setLoading(Boolean loading){
+        isLoading = loading;
+        progressBar.setVisibility(isLoading ? VISIBLE : INVISIBLE);
 
-                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                    XmlPullParser xpp = factory.newPullParser();
+    }
+    public void loadNextTouristPage(){
 
-                    xpp.setInput(isr);
-                    CodeItem item = null;
-                    int eventType = xpp.getEventType();
-                    while (eventType != XmlPullParser.END_DOCUMENT) {
-                        switch (eventType) {
-                            case XmlPullParser.START_DOCUMENT:
-                                break;
-                            case XmlPullParser.START_TAG:
-                                String tagName = xpp.getName();
-                                if (tagName.equals("item")) {
-                                    item = new CodeItem();
-                                } else if (tagName.equals("code")) {
-                                    xpp.next();
-                                    item.code = xpp.getText();
-                                } else if (tagName.equals("name")) {
-                                    xpp.next();
-                                    item.name = xpp.getText();
-                                }
-                                break;
-                            case XmlPullParser.END_TAG:
-                                String tagNames = xpp.getName();
-                                if (tagNames.equals("item")) {
-                                    categoryMap.put(item.code, item.name); // <"A01","자연">
-                                }
-                        }
-                        eventType = xpp.next();
-                    }
-                    runOnUiThread(() -> {
-                        Log.d("category item", "item size: "+categoryMap.size());
-                    });
-                } catch (IOException | XmlPullParserException e) {
-                    throw new RuntimeException(e);
-                }
+        if(isLoading) return;
+        if(isLastPage) return;
+        currentPage++;
 
-            }
-        };
-        t.start();
+        loadContentData(getString(R.string.tourist));
+    }
+
+    public void openKakaoMap(String title, String latitude, String longitude) {
+
+        if(latitude == null || longitude == null){
+            Toast.makeText(this, "위경도가 옳바르지 않습니다.", Toast.LENGTH_SHORT).show();
+        }
+
+        String url = "kakaomap://look?p=" + latitude + "," + longitude;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.setPackage("net.daum.android.map");
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "카카오맵이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show();
+        }
     }
 
 }
