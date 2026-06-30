@@ -11,14 +11,15 @@
 - 네트워크 : Retrofit2
 - DB : RoomDB
 - 개발환경 : Android Studio, Visual Studio Code
-- 오픈소스 : Kakao 로컬 검색 API
+- 오픈소스 : Tour API
 
 ## 사용기술
-- RoomDB
-- Kakao 로컬 키워드 검색 API
+- REST API
+- 한국관광공사 API 활용
+- HttpURLConnection / URL.openStream()
+- XML Parsing
 - 무한 스크롤 페이징 구현
 
 ## 주요기능
-### 1) 로그인&회원관리
-### 2) 장소검색&필터링
-### 3) 찜등록 및 조회
+### 1) 지역 검색
+### 2) 지역 상세 조회
