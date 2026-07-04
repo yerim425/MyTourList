@@ -28,23 +28,23 @@ public class Constants {
                 "A05", "음식"
         );
         Map<String, String> map = new LinkedHashMap<>();
-            map.put("서울", "1");
-            map.put("인천", "2");
-            map.put("대전", "3");
-            map.put("대구", "4");
-            map.put("광주", "5");
-            map.put("부산", "6");
-            map.put("울산", "7");
-            map.put("세종특별자치시", "8");
-            map.put("경기도", "31");
-            map.put("강원특별자치도", "32");
-            map.put("충청북도", "33");
-            map.put("충청남도", "34");
-            map.put("경상북도", "35");
-            map.put("경상남도", "36");
-            map.put("전북특별자치도", "37");
-            map.put("전라남도", "38");
-            map.put("제주특별자치도", "39");
+        map.put("서울", "1");
+        map.put("인천", "2");
+        map.put("대전", "3");
+        map.put("대구", "4");
+        map.put("광주", "5");
+        map.put("부산", "6");
+        map.put("울산", "7");
+        map.put("세종특별자치시", "8");
+        map.put("경기도", "31");
+        map.put("강원특별자치도", "32");
+        map.put("충청북도", "33");
+        map.put("충청남도", "34");
+        map.put("경상북도", "35");
+        map.put("경상남도", "36");
+        map.put("전북특별자치도", "37");
+        map.put("전라남도", "38");
+        map.put("제주특별자치도", "39");
         SIDO_MAP = Collections.unmodifiableMap(map);
 
         SIGUNGU_MAP = Map.ofEntries(

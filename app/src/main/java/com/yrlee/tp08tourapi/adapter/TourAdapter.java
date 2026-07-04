@@ -9,8 +9,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +22,8 @@ import com.bumptech.glide.Glide;
 import com.yrlee.tp08tourapi.MainActivity;
 import com.yrlee.tp08tourapi.R;
 import com.yrlee.tp08tourapi.data.TourItem;
+import com.yrlee.tp08tourapi.room.BookmarkManager;
+import com.yrlee.tp08tourapi.room.BookmarkTour;
 import com.yrlee.tp08tourapi.util.Constants;
 
 import java.util.ArrayList;
@@ -73,6 +77,32 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             ((MainActivity) context).openKakaoMap(item.title, item.mapy, item.mapx);
             }
         );
+
+        // 기존 리스너 제거 - RecyclerView는 ViewHolder를 재사용하기 때문에
+        holder.cbBookmark.setOnCheckedChangeListener(null);
+
+        // 체크 상태 설정
+        holder.cbBookmark.setChecked(
+                BookmarkManager.getInstance().isBookmarked(item.contentId)
+        );
+
+        // 다시 리스너 등록 - 찜 등록/해지 요청
+        holder.cbBookmark.setOnClickListener(v->{
+            if(holder.cbBookmark.isChecked()){
+                BookmarkTour bt = new BookmarkTour();
+                bt.contentId = item.contentId;
+                bt.title = item.title;
+                bt.address = item.addr1;
+                bt.image = item.firstImage;
+                bt.mapx = item.mapx;
+                bt.mapy = item.mapy;
+                bt.category = item.cat1;
+                ((MainActivity) context).insertTour(bt);
+            }else{
+                ((MainActivity) context).deleteTour(item.contentId);
+            }
+
+        });
     }
 
     @Override
@@ -84,7 +114,9 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
 
         TextView tvTitle, tvAddr, tvTel, tvCategory;
         ImageView ivImage;
-        LinearLayout layout;
+        RelativeLayout layout;
+
+        CheckBox cbBookmark;
         public VH(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tv_title);
@@ -93,6 +125,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             tvCategory = itemView.findViewById(R.id.tv_category);
             ivImage = itemView.findViewById(R.id.iv_first_image);
             layout = itemView.findViewById(R.id.layout_item);
+            cbBookmark = itemView.findViewById(R.id.cb_bookmark);
         }
     }
 }

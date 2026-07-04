@@ -6,6 +6,8 @@ import static android.view.View.VISIBLE;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +23,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputLayout;
 import com.yrlee.tp08tourapi.data.CodeItem;
@@ -33,6 +36,10 @@ import com.yrlee.tp08tourapi.fragment.RestaurantFragment;
 import com.yrlee.tp08tourapi.fragment.ShoppingFragment;
 import com.yrlee.tp08tourapi.fragment.TouristFragment;
 import com.yrlee.tp08tourapi.fragment.TravelCourseFragment;
+import com.yrlee.tp08tourapi.room.AppDatabase;
+import com.yrlee.tp08tourapi.room.BookmarkCallback;
+import com.yrlee.tp08tourapi.room.BookmarkDao;
+import com.yrlee.tp08tourapi.room.BookmarkTour;
 import com.yrlee.tp08tourapi.util.Constants;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -88,11 +95,19 @@ public class MainActivity extends AppCompatActivity {
     // 로딩 프로그래스 바
     ProgressBar progressBar;
 
+    // 플로팅 버튼
+    FloatingActionButton fab;
+
     // 페이징
     private int currentPage = 1;
     private boolean isLoading = false;
     private boolean isLastPage = false;
     private int totalCount = 0;
+
+    // 찜 관리를 위한 RoomDB
+    private AppDatabase db;
+    private BookmarkDao bookmarkDao;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,11 +119,16 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        // 아이템 카테고리 목록 요청
-//        loadCategoryCodeData();
+
+        // 찜 관리 데이터베이스
+        db = AppDatabase.getInstance(this);
+        bookmarkDao = db.getBookmarkDao();
 
         // 프로그래스 바
         progressBar = findViewById(R.id.progressbar);
+
+        // 플로팅 버튼
+        fab = findViewById(R.id.fab);
 
         // 카테고리 별 탭 추가
         tabLayout = findViewById(R.id.tab_layout);
@@ -183,6 +203,12 @@ public class MainActivity extends AppCompatActivity {
 
         // 처음에 한 번 ContentData 호출
         loadContentData(getString(R.string.tourist));
+
+        // 플로팅 버튼 -> 찜 목록 화면
+        fab.setOnClickListener(v->{
+            startActivity(new Intent(this, BookmarkActivity.class));
+        });
+
     }
 
     // 상세 지역 리스트 업데이트
@@ -252,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
                                 } else if (tagName.equals("contentid")) {
                                     xpp.next();
                                     item.contentId = xpp.getText();
+                                    Log.d("room", item.contentId);
                                 } else if (tagName.equals("contenttypeid")) {
                                     xpp.next();
                                     item.contentTypeId = xpp.getText();
@@ -316,9 +343,14 @@ public class MainActivity extends AppCompatActivity {
                        else if(contentTypeName.equals(getString(R.string.shopping))) shoppingFragment.addItems(tourItems);
                        else if(contentTypeName.equals(getString(R.string.travel_course))) travelCourseFragment.addItems(tourItems);
                     });
-                } catch (IOException | XmlPullParserException e) {
-                    throw new RuntimeException(e);
-                }finally {
+                }
+//                catch (IOException | XmlPullParserException e) {
+//                    throw new RuntimeException(e);
+//                }
+                catch (Exception e) {
+                    Log.e("ROOM", Log.getStackTraceString(e));
+                }
+                finally {
                     setLoading(false);
                 }
 
@@ -332,6 +364,8 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(isLoading ? VISIBLE : INVISIBLE);
 
     }
+
+    // 스크롤 시 다음 장소 리스트 요청하기
     public void loadNextTouristPage(){
 
         if(isLoading) return;
@@ -339,6 +373,30 @@ public class MainActivity extends AppCompatActivity {
         currentPage++;
 
         loadContentData(getString(R.string.tourist));
+    }
+
+    // 찜 등록 처리
+    public void insertTour(BookmarkTour item){
+        new Thread(()->{
+            bookmarkDao.insert(item);
+        }).start();
+    }
+    // 찜 해지 처리
+    public void deleteTour(String contentId){
+        new Thread(()->{
+            bookmarkDao.deleteById(contentId);
+        }).start();
+    }
+    // 찜 등록 여부 확인
+    public void isBookmarked(String contentId, BookmarkCallback callback){
+        new Thread(()->{
+//            Log.d("ROOM", "contentId = " + contentId);
+           boolean result = bookmarkDao.isBookmarked(contentId);
+           // 콜백
+            new Handler(Looper.getMainLooper()).post(()->{
+                callback.onResult(result);
+            });
+        }).start();
     }
 
     public void openKakaoMap(String title, String latitude, String longitude) {
