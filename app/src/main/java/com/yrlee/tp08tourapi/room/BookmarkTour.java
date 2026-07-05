@@ -9,11 +9,13 @@ public class BookmarkTour {
     @PrimaryKey
     @NonNull
     public String contentId = "";
+    public String contentTypeId;
     public String title;
-    public String image;
+    public String firstImage;
     public String address;
     public String mapx;
     public String mapy;
-    public String category;
+    public String cat1;
+    public String tel;
 
 }

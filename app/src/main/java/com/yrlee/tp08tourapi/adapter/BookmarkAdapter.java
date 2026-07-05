@@ -1,18 +1,14 @@
 package com.yrlee.tp08tourapi.adapter;
 
 import static android.view.View.GONE;
-import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -20,10 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.yrlee.tp08tourapi.BookmarkActivity;
 import com.yrlee.tp08tourapi.MainActivity;
 import com.yrlee.tp08tourapi.R;
-import com.yrlee.tp08tourapi.TourDetailActivity;
-import com.yrlee.tp08tourapi.data.TourDetailItem;
 import com.yrlee.tp08tourapi.data.TourItem;
 import com.yrlee.tp08tourapi.room.BookmarkManager;
 import com.yrlee.tp08tourapi.room.BookmarkRepository;
@@ -31,18 +26,19 @@ import com.yrlee.tp08tourapi.room.BookmarkTour;
 import com.yrlee.tp08tourapi.util.Constants;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
-    Context context;
-    ArrayList<TourItem> touristItems;
-    BookmarkRepository bookmarkRepository;
+public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.VH> {
 
-    public TourAdapter(Context context, ArrayList<TourItem> list){
+    private Context context;
+    private List<BookmarkTour> itemList;
+    private BookmarkRepository bookmarkRepository;
+
+    public BookmarkAdapter(Context context, List<BookmarkTour> items){
         this.context = context;
-        this.touristItems = list;
+        this.itemList = items;
         bookmarkRepository = new BookmarkRepository(context);
     }
-
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -50,14 +46,15 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH holder, int position) {
+    public void onBindViewHolder(@NonNull BookmarkAdapter.VH holder, int position) {
 
-        TourItem item = touristItems.get(position);
+        BookmarkTour item = itemList.get(position);
         holder.tvTitle.setText(item.title);
-        if(item.addr1 == null){
+        holder.tvAddr.setText(item.address);
+        if(item.address == null){
             holder.tvAddr.setVisibility(GONE);
         }else{
-            holder.tvAddr.setText(item.addr2==null ? item.addr1 : item.addr1 + ' ' + item.addr2);
+            holder.tvAddr.setText(item.address);
             holder.tvAddr.setVisibility(VISIBLE);
         }
         if(item.tel==null) {
@@ -82,14 +79,10 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
                 .placeholder(R.drawable.img_search)
                 .into(holder.ivImage);
 
+//        Log.d("adapter", "title: " + item.title + "mapy: "+item.mapy + "mapx: " + item.mapx);
 
-        // 리스너 등록
         holder.layout.setOnClickListener( v-> {
-            Intent intent = new Intent(context, TourDetailActivity.class);
-                    intent.putExtra("contentId", item.contentId);
-                    intent.putExtra("contentTypeId", item.contentTypeId);
-            context.startActivity(intent);
-//            ((MainActivity) context).openKakaoMap(item.title, item.mapy, item.mapx);
+                ((BookmarkActivity) context).openKakaoMap(item.title, item.mapy, item.mapx);
             }
         );
 
@@ -106,9 +99,8 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             if(holder.cbBookmark.isChecked()){
                 BookmarkTour bt = new BookmarkTour();
                 bt.contentId = item.contentId;
-                bt.contentTypeId = item.contentTypeId;
                 bt.title = item.title;
-                bt.address = item.addr2 == null ? item.addr1 : item.addr1+" "+item.addr2;
+                bt.address = item.address;
                 bt.firstImage = item.firstImage;
                 bt.mapx = item.mapx;
                 bt.mapy = item.mapy;
@@ -120,15 +112,25 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             }
 
         });
+        // 위로 스크롤 시 새로 고침
     }
 
     @Override
     public int getItemCount() {
-        return touristItems.size();
+        return itemList.size();
+    }
+
+    public void setItems(List<BookmarkTour> list){
+        itemList.addAll(list);
+        notifyItemChanged(itemList.size());
+    }
+
+    public void clear(){
+        itemList.clear();
+        notifyDataSetChanged();
     }
 
     class VH extends RecyclerView.ViewHolder{
-
         TextView tvTitle, tvAddr, tvTel, tvCategory;
         ImageView ivImage;
         RelativeLayout layout;

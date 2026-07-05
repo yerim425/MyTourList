@@ -1,9 +1,5 @@
 package com.yrlee.tp08tourapi.fragment;
 
-import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
-
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,23 +17,19 @@ import com.yrlee.tp08tourapi.R;
 import com.yrlee.tp08tourapi.adapter.TourAdapter;
 import com.yrlee.tp08tourapi.data.TourItem;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 
-// 관광지 데이터 보여줌
-public class TouristFragment extends BaseFragment {
+// tour item list 보여줌
+public class TourFragment extends Fragment {
+
+    RecyclerView recyclerView;
+    TourAdapter tourAdapter;
+    ArrayList<TourItem> tourItems = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_tourist, container, false);
+        return inflater.inflate(R.layout.fragment_tour, container, false);
     }
 
     @Override
@@ -73,11 +65,13 @@ public class TouristFragment extends BaseFragment {
                 }
             }
         });
-        tvNoData = view.findViewById(R.id.tv_no_data);
-        if(tourItems.isEmpty()){
-            tvNoData.setVisibility(VISIBLE);
-        }else{
-            tvNoData.setVisibility(INVISIBLE);
+    }
+
+    public void addItems(ArrayList<TourItem> items){
+        int size = tourItems.size();
+        if(!items.isEmpty()){
+            tourItems.addAll(items);
+            tourAdapter.notifyItemRangeChanged(size, items.size());
         }
     }
 }

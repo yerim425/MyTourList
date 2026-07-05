@@ -15,6 +15,7 @@ import androidx.room.RoomDatabase;
 import com.yrlee.tp08tourapi.room.AppDatabase;
 import com.yrlee.tp08tourapi.room.BookmarkDao;
 import com.yrlee.tp08tourapi.room.BookmarkManager;
+import com.yrlee.tp08tourapi.room.BookmarkRepository;
 import com.yrlee.tp08tourapi.room.BookmarkTour;
 
 import java.util.HashSet;
@@ -22,8 +23,8 @@ import java.util.List;
 
 public class IntroActivity extends AppCompatActivity {
 
-    private AppDatabase db;
-    private BookmarkDao bookmarkDao;
+//    private AppDatabase db;
+//    private BookmarkDao bookmarkDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,29 +37,22 @@ public class IntroActivity extends AppCompatActivity {
             return insets;
         });
 
-        db = AppDatabase.getInstance(this);
-        bookmarkDao = db.getBookmarkDao();
+        BookmarkRepository repository = new BookmarkRepository(this);
 
-        new Thread(() -> {
+            repository.getAll(bookmarkList -> {
+                // 필요하면 HashSet으로 변환
+                HashSet<String> bookmarkIds = new HashSet<>();
+                for (BookmarkTour item : bookmarkList) {
+                    bookmarkIds.add(item.contentId);
+                }
+                // 전역 저장
+                BookmarkManager.getInstance().setBookmarkIds(bookmarkIds);
 
-            List<BookmarkTour> bookmarkList = bookmarkDao.getAll();
-
-            // 필요하면 HashSet으로 변환
-            HashSet<String> bookmarkIds = new HashSet<>();
-            for (BookmarkTour item : bookmarkList) {
-                bookmarkIds.add(item.contentId);
-            }
-
-            // 전역 저장
-            BookmarkManager.getInstance().setBookmarkIds(bookmarkIds);
-
-            runOnUiThread(() -> {
                 new Handler().postDelayed(() -> {
                     startActivity(new Intent(this, MainActivity.class));
                     finish();
-                }, 2000);
+                }, 1500);
             });
 
-        }).start();
     }
 }
