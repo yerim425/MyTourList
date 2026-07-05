@@ -17,7 +17,21 @@ public class Constants {
 
     static {
 
-        CONTENT_TYPE_MAP = Map.of("관광지", "12", "문화시설", "14", "축제공연행사", "15", "여행코스", "25", "레포츠", "28", "숙박", "32", "쇼핑", "38", "음식점", "39");
+//        CONTENT_TYPE_MAP = Map.of(
+//                "관광지", "12",
+//                "문화시설", "14",
+//                "축제공연행사", "15",
+//                "여행코스", "25",
+//                "레포츠", "28");
+//
+        Map<String, String> typeMap = new LinkedHashMap<>();
+        typeMap.put("관광지", "12");
+        typeMap.put("문화시설", "12");
+        typeMap.put("축제공연행사", "15");
+        typeMap.put("레포츠", "28");
+        typeMap.put("여행코스", "25");
+        CONTENT_TYPE_MAP = Collections.unmodifiableMap(typeMap);;
+
         CATEGORY_MAP = Map.of(
                 "A01", "자연",
                 "A02", "인문(문화/예술/역사)",

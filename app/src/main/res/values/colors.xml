@@ -8,4 +8,5 @@
     <color name="tab_unselected">#FF888888</color>
     <color name="beige">#FFE9C9</color>
     <color name="bg_blue">#CECEFF</color>
+    <color name="line">#E8E8FF</color>
 </resources>

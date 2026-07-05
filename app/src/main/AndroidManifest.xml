@@ -26,7 +26,7 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".ItemDetailActivity"
+            android:name=".TourDetailActivity"
             android:exported="false" />
         <activity
             android:name=".IntroActivity"
