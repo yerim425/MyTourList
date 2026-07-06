@@ -15,7 +15,7 @@ public class BookmarkTour {
     public String address;
     public String mapx;
     public String mapy;
-    public String cat1;
+    public String lclsSystm1;
     public String tel;
 
 }

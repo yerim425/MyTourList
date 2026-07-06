@@ -65,7 +65,7 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.VH> {
             holder.tvTel.setVisibility(VISIBLE);
             holder.tvTel.setText(item.tel);
         }
-        String category = Constants.CATEGORY_MAP.get(item.cat1);
+        String category = Constants.CATEGORY1_MAP.get(item.lclsSystm1);
         if(category!=null){
             holder.tvCategory.setVisibility(VISIBLE);
             holder.tvCategory.setText("#"+category);
@@ -104,7 +104,7 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.VH> {
                 bt.firstImage = item.firstImage;
                 bt.mapx = item.mapx;
                 bt.mapy = item.mapy;
-                bt.cat1 = item.cat1;
+                bt.lclsSystm1 = item.lclsSystm1;
                 bt.tel = item.tel;
                 bookmarkRepository.insert(bt);
             }else{
