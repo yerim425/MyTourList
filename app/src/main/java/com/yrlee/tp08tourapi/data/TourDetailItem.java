@@ -24,11 +24,6 @@ public class TourDetailItem {
 
     public String takeTime; // 총 소요시간 - 여행코스
 
-
-    // 이거 안 쓸 수도 있음
-//    public TourDetailIntro intros;
-//    public TourDetailRecommend recommends;
-
     public List<TourDetailIntroItem> introList;
     public List<TourDetailRecommendItem> recommendList;
 

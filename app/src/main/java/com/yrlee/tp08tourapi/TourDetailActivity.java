@@ -153,6 +153,8 @@ public class TourDetailActivity extends AppCompatActivity {
         executor.execute(() -> {
             // 기본 상세 정보 조회 url
             detailAddr = BASE_URL + detailRequestKeyword + BASE_TYPE + "&contentId=" + tourItem.contentId;
+
+
             Log.d("here", detailAddr);
             try {
                 XmlPullParser xpp = XmlParserUtil.getParser(detailAddr);

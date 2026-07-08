@@ -79,13 +79,10 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
                 .into(holder.ivImage);
 
 
-        // 리스너 등록
         holder.layout.setOnClickListener( v-> {
             Intent intent = new Intent(context, TourDetailActivity.class);
                     intent.putExtra("contentId", item.contentId);
-//                    intent.putExtra("contentTypeId", item.contentTypeId);
             context.startActivity(intent);
-//
             }
         );
 

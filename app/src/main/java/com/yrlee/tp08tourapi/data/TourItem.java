@@ -8,12 +8,9 @@ public class TourItem {
     public String firstImage; // 관광지 대표 이미지(원본)
     public String addr1; // 주소
     public String addr2; // 상세 주소
-
     public String mapx;
     public String mapy;
-
     public String eventStartDate;
     public String eventEndDate;
-
-    public String lclsSystm1; // 대분류1(자연,문화시설, 축제 등)
+    public String lclsSystm1; // 분류(자연, 문화시설, 축제 등)
 }

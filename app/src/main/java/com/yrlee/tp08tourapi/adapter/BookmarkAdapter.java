@@ -82,10 +82,8 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.VH> {
                 .placeholder(R.drawable.img_search)
                 .into(holder.ivImage);
 
-//        Log.d("adapter", "title: " + item.title + "mapy: "+item.mapy + "mapx: " + item.mapx);
 
         holder.layout.setOnClickListener( v-> {
-//                ((BookmarkActivity) context).openKakaoMap(item.title, item.mapy, item.mapx);
                     Intent intent = new Intent(context, TourDetailActivity.class);
                     intent.putExtra("contentId", item.contentId);
                     context.startActivity(intent);

@@ -17,6 +17,7 @@ public interface BookmarkDao {
     @Delete
     void delete(BookmarkTour tour);
 
+    // 북마크 목록 조회
     @Query("SELECT * FROM bookmark_tour")
     List<BookmarkTour> getAll();
 

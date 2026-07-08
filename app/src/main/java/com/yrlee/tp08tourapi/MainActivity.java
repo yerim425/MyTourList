@@ -51,10 +51,8 @@ import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
-    //String BASE_URL = "https://apis.data.go.kr/B551011/KorService1/";
     String BASE_URL = "https://apis.data.go.kr/B551011/KorService2/";
     String BASE_TYPE = "?MobileOS=AND&MobileApp=TripPocket&_type=xml&numOfRows=20&serviceKey=" + BuildConfig.API_KEY;
-//    String API_KEY = "oaEqMy4KQboCdSKksNqjpIiAUvGmfifILLU46GwXiQ3IhM9tVam1FEIlOQxM4stcJYI6LickRAyXqw0mKfPx%2FA%3D%3D";
 
 
     // areaCode 관련 TextInputLayout
@@ -246,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
                         "&lDongRegnCd=" + areaCode +
                         "&arrange=O&pageNo="+currentPage;
             }
-
             if(singunguCode != null)
                 address += "&lDongSignguCd="+singunguCode;
+
 
             Log.d("url", address);
 
