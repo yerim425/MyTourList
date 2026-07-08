@@ -1,4 +1,4 @@
-# 트래블노트 TravelNote
+# 트립포켓 TripPocket
 - Android Native App, 1인 제작
 
 ## 개요
