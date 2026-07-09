@@ -35,16 +35,17 @@
 
 ### 2) 지역 상세 조회
 - 선택한 여행지의 상세 정보를 볼 수 있다.
-  (1) 관광지/문화시설/축제공연행사/레포츠
+(1) 관광지/문화시설/축제공연행사/레포츠
   - 여행지의 소개정보(이용시간, 이용요금, 주차시설, 주차요금, 행사기간 등)를 조회할 수 있다.
   - 주소를 클릭하면 카카오맵이 연동된다.
-    ![detail](images/detail01_1.png) ![detail](images/detail01_2.png) ![detail](images/kakaomap.png)
+![detail](images/detail01_1.jpg) ![detail](images/detail01_2.jpg) ![detail](images/kakaomap.jpg)
 
-  (2) 여행코스
-  - 여행코스 목록을 볼 수 있다.
-    ![detail](images/recommend01_1.png) ![detail](images/recommend01_2.png)
+(2) 여행코스
+- 여행코스 목록을 볼 수 있다.
+![detail](images/recommend01_1.jpg) ![detail](images/recommend01_2.jpg)
     
 ### 3) 북마크 등록/해지
 - 관심있는 여행지를 북마크 할 수 있으며, 북마크 목록을 조회/관리 할 수 있다.
-  ![detail](images/bookmark_list.png)
+//![detail](images/bookmark_list.jpg)
+<img src="images/bookmark_list.jpg" width="300">
 
