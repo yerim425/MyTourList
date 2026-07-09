@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private BookmarkDao bookmarkDao;
 
     // 새로운 api 요청을 위한 식별 id
-    private int requestId = 0;
+//    private int requestId = 0;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<?> currentTask;
@@ -176,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
 
         // 검색 버튼 리스너
         findViewById(R.id.btn_search).setOnClickListener(v -> {
+            setLoading(false);
+
             String tabName = getString(R.string.tourist);
             TabLayout.Tab tab = tabLayout.getTabAt(tabLayout.getSelectedTabPosition());
 //            TourFragment fragment = null;
@@ -203,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                setLoading(false);
                 // 해당하는 콘텐츠의 데이터들 요청
                 String tabName = tab.getText().toString();
                 TourFragment fragment;
@@ -258,16 +261,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadContentData(String contentTypeName) {
         // 현재 페이지 가져오기
-        final int currentRequestId = ++requestId;
+//        final int currentRequestId = ++requestId;
         // 이전 작업 취소
         if (currentTask != null && !currentTask.isDone()) {
-            currentTask.cancel(true);
+//            currentTask.cancel(true);
         }
         tvNoData.setVisibility(INVISIBLE);
         setLoading(true);
         String contentTypeId = Constants.CONTENT_TYPE_MAP.get(contentTypeName);
         Log.d("url", "contentTypeId: "+contentTypeId);
         int currentPage = currentFragment.getCurrentPage();
+        TourFragment targetFragment = currentFragment;
         currentTask = executor.submit(() -> {
             String areaCode = Constants.SIDO_MAP.get(actvArea.getText().toString());
             String singunguCode = Objects.requireNonNull(Constants.SIGUNGU_MAP.get(areaCode)).get(actvAreaDetail.getText().toString());
@@ -294,7 +298,8 @@ public class MainActivity extends AppCompatActivity {
             // api 요청
             try {
                 XmlPullParser xpp = XmlParserUtil.getParser(address);
-                tourListParse(xpp, currentRequestId);
+//                tourListParse(xpp, currentRequestId, targetFragment, targetTabName);
+                tourListParse(xpp, targetFragment, contentTypeId);
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -318,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // tour list xml 파싱
-    private void tourListParse(XmlPullParser xpp, int currentRequestId) throws XmlPullParserException, IOException{
+    private void tourListParse(XmlPullParser xpp, TourFragment targetFragment, String contentTypeId) throws XmlPullParserException, IOException{
         ArrayList<TourItem> tourItems = new ArrayList<>();
         TourItem item = null;
         String[] itemSize = new String[3]; // 0:numOfRows, 1:pageNo, 2:totalCount
@@ -380,12 +385,12 @@ public class MainActivity extends AppCompatActivity {
             eventType = xpp.next();
         }
         runOnUiThread(()->{
-            if(currentRequestId != requestId) return;
-            updateUI(tourItems, itemSize);
+//            if(currentRequestId != requestId) return;
+            updateUI(targetFragment, contentTypeId, tourItems, itemSize);
         });
     }
 
-    private void updateUI(ArrayList<TourItem> tourItems, String[] itemSize){
+    private void updateUI(TourFragment targetFragment, String contentTypeId, ArrayList<TourItem> tourItems, String[] itemSize){
 
         if (isFinishing() || isDestroyed()) return;
 
@@ -393,30 +398,32 @@ public class MainActivity extends AppCompatActivity {
             int currentSize = Integer.parseInt(itemSize[0]);
             int currentPage = Integer.parseInt(itemSize[1]);
             int totalSize = Integer.parseInt(itemSize[2]);
-            currentFragment.setItemSize(currentSize, currentPage, totalSize);
+            targetFragment.setItemSize(currentSize, currentPage, totalSize);
 //            if(currentSize >= totalSize) currentFragment.setIsLastPage(true);
-            tvItemCount.setText(currentFragment.getCurrentSize() + "/" + currentFragment.getTotalSize());
-            tvItemCount.setVisibility(VISIBLE);
+            if(targetFragment == currentFragment){
+                tvItemCount.setText(currentFragment.getCurrentSize() + "/" + currentFragment.getTotalSize());
+                tvItemCount.setVisibility(VISIBLE);
 
-            if(totalSize==0) tvNoData.setVisibility(VISIBLE);
-            else tvNoData.setVisibility(INVISIBLE);
+                if(totalSize==0) tvNoData.setVisibility(VISIBLE);
+                else tvNoData.setVisibility(INVISIBLE);
+            }
+
 
         }catch(NumberFormatException | NullPointerException e){
-            tvItemCount.setVisibility(INVISIBLE);
-            tvNoData.setVisibility(VISIBLE);
-            currentFragment.setIsLastPage(true);
+            if(targetFragment == currentFragment){
+                tvItemCount.setVisibility(INVISIBLE);
+                tvNoData.setVisibility(VISIBLE);
+            }
+            targetFragment.setIsLastPage(true);
         }
-        currentFragment.addItems(tourItems);
-        TabLayout.Tab tab = tabLayout.getTabAt(tabLayout.getSelectedTabPosition());
-        if(tab != null && tab.getText() != null){
-            String tabName = tab.getText().toString();
-            if(tabName.equals(getString(R.string.tourist))) tourFragment = currentFragment;
-            else if(tabName.equals(getString(R.string.cultural_facilities))) cultureFragment = currentFragment;
-            else if(tabName.equals(getString(R.string.festival))) festivalFragment = currentFragment;
-            else if(tabName.equals(getString(R.string.leisure_sports))) leportsFragment = currentFragment;
-            else if(tabName.equals(getString(R.string.travel_course))) recommendFragment = currentFragment;
-        }
-        setLoading(false);
+        targetFragment.addItems(tourItems);
+        if(contentTypeId.equals("12")) tourFragment = targetFragment;
+        else if(contentTypeId.equals("14")) cultureFragment = targetFragment;
+        else if(contentTypeId.equals("15")) festivalFragment = targetFragment;
+        else if(contentTypeId.equals("28")) leportsFragment = targetFragment;
+        else if(contentTypeId.equals("25")) recommendFragment = targetFragment;
+
+        if(targetFragment == currentFragment) setLoading(false);
     }
 
 
