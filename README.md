@@ -38,12 +38,22 @@
 (1) 관광지/문화시설/축제공연행사/레포츠
 - 여행지의 소개정보(이용시간, 이용요금, 주차시설, 주차요금, 행사기간 등)를 조회할 수 있다.
 - 주소를 클릭하면 카카오맵이 연동된다.
-<img src="images/detail01_1.jpg" width="200"> <img src="images/detail01_2.jpg" width="200"> <img src="images/kakaomap.jpg" width="200">
+<p>
+  <img src="images/detail01_1.jpg" width="200">
+  <img src="images/detail01_2.jpg" width="200">
+  <img src="images/kakaomap.jpg" width="200">
+</p>
+
 (2) 여행코스
 - 여행코스 목록을 볼 수 있다.
-<img src="images/recommend01_1.jpg" width="200"> <img src="images/recommend01_2.jgp" width="200">
+<p>
+  <img src="images/recommend01_1.jpg" width="200">
+  <img src="images/recommend01_2.jgp" width="200">
+</p>
 
 ### 3) 북마크 등록/해지
 - 관심있는 여행지를 북마크 할 수 있으며, 북마크 목록을 조회/관리 할 수 있다.
-<img src="images/bookmark_list.jpg" width="200">
+<p>
+  <img src="images/bookmark_list.jpg" width="200">
+</p>
 
