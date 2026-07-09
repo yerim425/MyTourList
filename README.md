@@ -22,20 +22,29 @@
 - 무한 스크롤 페이징 구현
 
 ## 와이어프레임 / 시스템 구조도
+![와이어프레임_시스템구조도](images/wireframe_structure.png)
 
 ## UI Flow
+![ui_flow](images/ui_flow.png)
 
 ## 주요기능
 ### 1) 지역 기반 검색
 - 지역명, 시군구명을 선택하여 여행지를 검색할 수 있다.
 - 탭 카테고리 별로 여행지를 분류하여 검색할 수 있다.
+![main](images/main.png)
 
 ### 2) 지역 상세 조회
 - 선택한 여행지의 상세 정보를 볼 수 있다.
   (1) 관광지/문화시설/축제공연행사/레포츠
   - 여행지의 소개정보(이용시간, 이용요금, 주차시설, 주차요금, 행사기간 등)를 조회할 수 있다.
+  - 주소를 클릭하면 카카오맵이 연동된다.
+    ![detail](images/detail01_1.png) ![detail](images/detail01_2.png) ![detail](images/kakaomap.png)
+
   (2) 여행코스
   - 여행코스 목록을 볼 수 있다.
+    ![detail](images/recommend01_1.png) ![detail](images/recommend01_2.png)
+    
 ### 3) 북마크 등록/해지
 - 관심있는 여행지를 북마크 할 수 있으며, 북마크 목록을 조회/관리 할 수 있다.
+  ![detail](images/bookmark_list.png)
 
